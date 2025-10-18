@@ -27,7 +27,7 @@ const LoginForm = () => {
 
       try {
         const response = await axios.post(
-          "http://192.168.0.127:8000/api/login",
+          "http://192.168.0.128:8000/api/login",
           formData,
           {
             headers: { "Content-Type": "application/json" },
@@ -39,18 +39,18 @@ const LoginForm = () => {
 
         console.log("Full API Response:", response.data);
 
-        // ✅ Store token and user in localStorage (standard keys)
+        // Store token and user in localStorage (standard keys)
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
 
-        // ✅ Set default header for axios
+        //  Set default header for axios
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        setMessage("✅ Login successful!");
+        setMessage(" Login successful!");
         console.log("Token:", token);
         console.log("User:", user);
 
-        // ✅ Redirect to dashboard
+        //  Redirect to dashboard
         setTimeout(() => navigate("/dashboard"), 1500);
       } catch (error) {
         if (error.response && error.response.status === 401) {

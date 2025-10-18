@@ -1,46 +1,60 @@
 import React, { useEffect, useState } from "react";
 import { FaEye, FaEdit, FaRandom } from "react-icons/fa";
 import user_logo from "../../assets/User-logo.png";
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getStudentById, updateStudent } from "../API/studentAPI";
 import Swal from "sweetalert2";
-
+import { FaChalkboardUser } from "react-icons/fa6";
+import { FaClipboardCheck } from "react-icons/fa"; // from Font Awesome
 const Students = () => {
   const [students, setStudents] = useState([]);
   const [editStudentModal, setEditStudentModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null); 
+  const navigate = useNavigate();
 
   const {id} = useParams();
 
   // get students from API
     useEffect(() => {
-        const fetchStudent = async () => {
-          if (!id) return;
+      const fetchStudent = async () => {
+        if (!id) return;
 
-          setLoading(true); // start loading
-          setError(null);   // reset error
+        setLoading(true); // start loading
+        setError(null);   // reset error
+        setStudents([]);  // clear previous data
 
-          try {
-            const student = await getStudentById(id); // fetch single student
-            if (student) {
-              setSelectedStudent(student);
-              setStudents(student); // wrap in array for table
-            } else {
-              setStudents([]); // no student found
-            }
-          } catch (err) {
-            console.error("❌ Error fetching student:", err);
-            setError("Failed to fetch student.");
+        try {
+          const res = await getStudentById(id); // fetch single student
+
+          //  Check API structure
+          const studentData = res?.data || res;
+
+          if (studentData) {
+            setSelectedStudent(studentData);
+            setStudents(studentData); // must be array for table
+          } else {
             setStudents([]);
-          } finally {
-            setLoading(false); // stop loading
           }
-        };
+        } catch (err) {
+          console.error("❌ Error fetching student:", err);
+          setError("Failed to fetch student.");
+          setStudents([]);
+        } finally {
+          setLoading(false); // stop loading
+        }
+      };
 
-        fetchStudent();
-      }, [id]);
+      fetchStudent();
+
+      // Optional cleanup to prevent memory leak
+      return () => {
+        setStudents([]);
+        setSelectedStudent(null);
+      };
+    }, [id]);
+
 
   // Handle modal input changes
   const handleInputChange = (e) => {
@@ -50,7 +64,6 @@ const Students = () => {
 
   // Handle Edit submit (optional: call API to save)
   const handleEditSubmit = async (e) => {
-    console.log(selectedStudent);
     
     e.preventDefault();
     if (!selectedStudent?.id) return;
@@ -58,6 +71,7 @@ const Students = () => {
     try {
       setLoading(true); // optional: show spinner/loading
       const updated = await updateStudent(selectedStudent.id, selectedStudent); // API call
+    
 
       // Update local state after successful API update
       setStudents((prev) =>
@@ -72,6 +86,8 @@ const Students = () => {
         showConfirmButton: false,
       });
 
+      setTimeout(() => navigate(`/dashboard/students/${id}`), 500);
+
       setEditStudentModal(false); // close modal
     } catch (error) {
       console.error(error);
@@ -85,39 +101,48 @@ const Students = () => {
     }
   };
 
-  let [count ,setCount] = useState(1);
-
-  if (loading) return <div className="w-[89%] min-h-screen flex items-center justify-center
-   text-3xl bg-gray-100 text-pink-700 fixed">
-    Loading Students...</div>;
-  // if (error) return <div>{error}</div>;
-
-  if (error) return <div className="w-[89%] min-h-screen flex items-center justify-center
-   text-3xl bg-gray-100 text-pink-700 fixed">{error}</div>;
-
+  // let [count ,setCount] = useState(1);
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       {/* Header */}
-      <div className="flex flex-wrap justify-between gap-4 p-5 shadow rounded-lg mb-6">
-        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-white shadow">
-          <div>
-            <h3 className="text-xl font-bold text-indigo-800">Web-Design/React</h3>
-            <p className="text-lg text-gray-600">React</p>
+      <div className="flex flex-wrap justify-between bg-gray-200 gap-4 p-5 px-16 shadow rounded-lg mb-6">
+        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
+          <div className="flex items-center ">
+            <div className="w-20 h-20 rounded-full p-4 bg-white mr-5">
+                <FaChalkboardUser className="w-full h-full" />
+            </div>
+            <div>
+                  <h3 className="text-xl font-bold text-indigo-800">Web-Design/React</h3>
+                <p className="text-lg text-indigo-800">React</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-white shadow">
-          <div>
-            <h3 className="text-xl font-bold text-indigo-800">Building A (A-101)</h3>
-            <p className="text-lg text-gray-600">Physical</p>
+
+        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
+          <div className="flex items-center ">
+            <div className="w-20 h-20 rounded-full p-4 bg-white mr-5">
+                <FaChalkboardUser className="w-full h-full" />
+            </div>
+            <div>
+                  <h3 className="text-xl font-bold text-indigo-800">Building 2</h3>
+                <p className="text-lg text-indigo-800">Physical</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-white shadow">
-          <div>
-            <h3 className="text-xl font-bold text-indigo-800">Sat-Sun</h3>
-            <p className="text-lg text-gray-600">14:00 - 17:00</p>
+
+        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
+          <div className="flex items-center ">
+            <div className="w-20 h-20 rounded-full p-4 bg-white mr-5">
+                <FaChalkboardUser className="w-full h-full" />
+            </div>
+            <div>
+                <p className="text-lg font-bold  text-indigo-800">Mon-Thur</p>
+                <h3 className="text-xl text-indigo-800" >9-11:00</h3>
+            </div>
           </div>
         </div>
+
       </div>
 
       {/* Title and Buttons */}
@@ -127,9 +152,13 @@ const Students = () => {
           <button className="bg-indigo-800 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
             Save-Score
           </button>
-          <button className="bg-indigo-800 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-            Attendent
-          </button>
+          <Link
+              to={`/dashboard/attendance/${id}`} // id = classId or studentId
+              className="inline-flex items-center gap-2 bg-indigo-700 hover:bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg shadow-md transition-all duration-200"
+            >
+              <FaClipboardCheck className="text-white text-lg" />
+              Attendance
+            </Link>
         </div>
       </div>
 
@@ -147,56 +176,87 @@ const Students = () => {
               <th className="p-3 text-xl text-left">Actions</th>
             </tr>
           </thead>
+
           <tbody>
-           {Array.isArray(students) && students.length > 0 ? (
-                students.map((s) => (
-                  <tr
-                    key={s.id || Math.random()}
-                    className="border-t border-gray-200 hover:bg-gray-50"
-                  >
-                    <td className="p-3 text-xl font-semibold text-gray-700">{ count++ }</td>
-                    <td className="p-3 text-xl font-bold text-indigo-900">{s.name}</td>
-                    <td className="p-3 text-xl font-bold text-red-700">ID : {s.id }</td>
-                    <td className="p-3 text-xl text-gray-700">{s.gender}</td>
-                    <td className="p-3 text-xl text-gray-700">{s.phone}</td>
-                    <td className="p-3">
-                      <div className="w-20 h-20 bg-gray-300 rounded-full overflow-hidden">
-                        <img
-                          src={user_logo}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </td>
-                    <td className="p-3 align-middle">
-                      <div className="flex items-center gap-2">
-                        <button className="bg-blue-900 p-2 text-xl rounded text-white">
-                          <FaEye />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedStudent(s);
-                            setEditStudentModal(true);
-                          }}
-                          className="bg-blue-900 p-2 text-xl rounded text-white"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button className="bg-blue-900 p-2 text-xl rounded text-white">
-                          <FaRandom />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="text-center p-4 text-gray-500">
-                    No students found
+            {loading ? (
+              
+              [...Array(5)].map((_, i) => (
+                <tr key={i} className="border-t border-gray-200">
+                  <td className="p-3">
+                    <div className="h-6 w-10 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3">
+                    <div className="h-6 w-32 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3">
+                    <div className="h-6 w-28 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3">
+                    <div className="h-6 w-20 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3">
+                    <div className="h-6 w-24 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3">
+                    <div className="w-16 h-16 bg-gray-200 animate-pulse rounded-full"></div>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex gap-2">
+                      <div className="h-8 w-8 bg-gray-200 animate-pulse rounded"></div>
+                      <div className="h-8 w-8 bg-gray-200 animate-pulse rounded"></div>
+                      <div className="h-8 w-8 bg-gray-200 animate-pulse rounded"></div>
+                    </div>
                   </td>
                 </tr>
-              )}
-
+              ))
+            ) : Array.isArray(students) && students.length > 0 ? (
+              students.map((s, index) => (
+                <tr
+                  key={s.id || index}
+                  className="border-t border-gray-200 hover:bg-gray-50"
+                >
+                  <td className="p-3 text-xl font-semibold text-gray-700">{index + 1}</td>
+                  <td className="p-3 text-xl font-bold text-indigo-900">{s.name}</td>
+                  <td className="p-3 text-xl font-bold text-red-700">ID : {s.id}</td>
+                  <td className="p-3 text-xl text-gray-700">{s.gender}</td>
+                  <td className="p-3 text-xl text-gray-700">{s.phone}</td>
+                  <td className="p-3">
+                    <div className="w-20 h-20 bg-gray-300 rounded-full overflow-hidden">
+                      <img
+                        src={user_logo}
+                        alt="profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </td>
+                  <td className="p-3 align-middle">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/dashboard/View_attendance/${s.id}`} className="bg-blue-900 p-2 text-xl rounded text-white">
+                        <FaEye />
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setSelectedStudent(s);
+                          setEditStudentModal(true);
+                        }}
+                        className="bg-blue-900 p-2 text-xl rounded text-white"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button className="bg-blue-900 p-2 text-xl rounded text-white">
+                        <FaRandom />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="text-center p-4 text-gray-500">
+                  No students found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -227,8 +287,8 @@ const Students = () => {
                   className="border mt-3 text-lg w-full border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
                 </select>
               </div>
               <div className="w-full">

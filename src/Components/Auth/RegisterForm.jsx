@@ -27,10 +27,10 @@ const RegisterForm = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://192.168.0.127:8000/api/register", formData,
+      const response = await axios.post("http://192.168.0.128:8000/api/register", formData,
       );
 
-      setMessage("✅ Registration successful!");
+      setMessage("Registration successful!");
       console.log(response.data);
 
       // redirect to login page after register success

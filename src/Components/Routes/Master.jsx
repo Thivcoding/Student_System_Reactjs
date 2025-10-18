@@ -7,6 +7,8 @@ import Students from '../Pages/Students';
 import Class from '../Pages/Classes';
 import LoginForm from '../Auth/LoginForm';
 import RegisterForm from '../Auth/RegisterForm';
+import AttendanceForm from '../Pages/Attendance';
+import View_Attendance from '../Pages/View_Attendance';
 
 const Master = () => {
   return (
@@ -24,8 +26,9 @@ const Master = () => {
 
             {/* Nested routes under /dashboard */}
             <Route path="AboutUs" element={<AboutUs />} />
-            {/* <Route path="Students" element={<Students />} /> */}
             <Route path="students/:id" element={<Students />} />
+            <Route path="attendance/:classID" element={<AttendanceForm />} />
+            <Route path="View_attendance/:id" element={<View_Attendance />} />
             <Route path="Class" element={<Class />} />
         </Route>
         

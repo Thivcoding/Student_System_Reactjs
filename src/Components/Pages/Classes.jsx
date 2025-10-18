@@ -31,32 +31,38 @@ const [activeClassId, setActiveClassId] = useState(null);
   const [error, setError] = useState(null);
   // getClass
     useEffect(() => {
-          const fetchClasses = async () => {
-            setLoading(true); // start loading
-            const user = JSON.parse(localStorage.getItem("user")); // get logged-in user
-            if (!user) {
-              console.warn("⚠️ No user info found!");
-              setLoading(false);
-              return;
-            }
+    const fetchClasses = async () => {
+      setLoading(true);
+      setError(null);
 
-            try {
-              const data = await getClasses(); // fetch all classes
-              const userClasses = data.data.filter(
-                (cls) => String(cls.teachid) === String(user.id) // handle type safely
-              );
-              console.log("Fetched classes for user:", userClasses);
-              setClassesList(userClasses);
-            } catch (err) {
-              console.error("❌ Error fetching classes:", err);
-              setError("Failed to fetch classes.");
-            } finally {
-              setLoading(false); // stop loading
-            }
-          };
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user) throw new Error("No user info found!");
 
-          fetchClasses();
-    }, []);
+        const data = await getClasses();
+        if (!data?.data) throw new Error("Invalid response from server");
+
+        const userClasses = data.data.filter(
+          (cls) => String(cls.teachid) === String(user.id)
+        );
+
+        // ✅ Simulate network delay using setTimeout
+        setTimeout(() => {
+          setClassesList(userClasses);
+          setLoading(false);
+        }, 1500); // delay 1.5 seconds
+      } catch (err) {
+        setTimeout(() => {
+          setError(err.message || "Failed to fetch classes.");
+          setClassesList([]);
+          setLoading(false);
+        }, 1500); // delay 1.5 seconds
+      }
+    };
+
+    fetchClasses();
+  }, []);
+
 
   // Add class handler
     const handleAddClass = async (e) => {
@@ -301,14 +307,6 @@ const [activeClassId, setActiveClassId] = useState(null);
       };
 
 
-
-  if (loading) return <div className="w-[89%] min-h-screen flex items-center justify-center
-   text-3xl bg-gray-100 text-pink-700 fixed">Loading classes...</div>;
-  // if (error) return <div>{error}</div>;
-
-  if (error) return <div className="w-[89%] min-h-screen flex items-center justify-center
-   text-3xl bg-gray-100 text-pink-700 fixed">{error}</div>;
-
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="mx-auto max-w-7xl">
@@ -382,108 +380,123 @@ const [activeClassId, setActiveClassId] = useState(null);
         </div>
 
         {/* Class List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 " >
-              {Array.isArray(classesList) && classesList.length > 0 ? (
-                classesList.map((cls, i) => (
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading
+            ? // ✅ Skeleton placeholders
+              Array(6)
+                .fill(0)
+                .map((_, idx) => (
                   <div
-                    key={cls?.id || i} // safe optional chaining
-                    className= "relative bg-white rounded-lg shadow  hover:shadow-xl transition-all"
+                    key={idx}
+                    className="relative bg-white rounded-lg shadow animate-pulse p-4 space-y-3"
                   >
-                    <div className="p-4 space-y-2">
-                      <h1 className="text-2xl font-bold text-black bg-gray-100 p-2 rounded">
-                        {cls?.Course ?? "No Name"}
-                      </h1>
-                      <p className="text-lg font-bold p-2 rounded">
-                        Term: {cls?.term ?? "N/A"}
-                      </p>
-                      <p className="text-lg font-bold bg-gray-100 p-2 rounded">
-                        Room: {cls?.room ?? "N/A"}
-                      </p>
-                      <p className="text-lg font-bold bg-white p-2 rounded">
-                        Teacher ID: {cls?.teachid ?? "N/A"}
-                      </p>
-                      <p className="text-lg font-bold bg-gray-100 p-2 rounded">
-                        Time: {cls?.time ?? "N/A"}
-                      </p>
+                    <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-6 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+
+                    {/* Buttons Skeleton */}
+                    <div className="flex gap-2 mt-4">
+                      <div className="h-10 bg-gray-300 rounded w-full"></div>
+                      <div className="h-10 bg-gray-300 rounded w-12"></div>
                     </div>
-
-                    {/* Buttons */}
-                    <div className="flex items-center justify-between gap-5 p-4 bg-gray-50 ">
-                      {/* View Students Link */}
-                      <Link
-                        to={`/dashboard/Students/${cls?.id ?? ""}`}
-                        className="bg-blue-900 text-white w-full flex items-center justify-center py-2 rounded hover:bg-blue-950 transition-all"
-                      >
-                        View Students
-                      </Link>
-
-                      {/* Main Icon Button */}
-                         <button
-                            onClick={() =>
-                              setActiveClassId((prev) => (prev === cls.id ? null : cls.id))
-                            }
-                            className="flex cursor-pointer items-center justify-center bg-blue-900 text-white p-2 rounded hover:bg-blue-950 transition-all"
-                          >
-                            <TbAntennaBars1 size={24} className="transform rotate-90" />
-                          </button>
-
-
-                          {/* Dropdown Actions */}
-                          {activeClassId === cls.id && (
-                            <div className="absolute bottom-20 right-0 w-1/2 justify-center gap-2 bg-gray-200 shadow-lg rounded border border-gray-200 z-50 flex flex-col">
-                              <button
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white cursor-pointer transition-all"
-                                onClick={() => {
-                                  setSelectedClassId(cls.id);
-                                  setAddStudent(true);
-                                  setActiveClassId(null); // close menu
-                                }}
-                              >
-                                <IoPersonAddSharp size={18} /> Add Student
-                              </button>
-
-                              <button
-                                className="flex items-center gap-2 px-4 py-2 bg-yellow-700 hover:bg-yellow-800 text-white cursor-pointer transition-all"
-                                onClick={() => {
-                                      setSelectedClassId(cls.id);  // select class to edit
-                                      setRoom(cls.room);           // prefill form
-                                      setCourse(cls.Course);
-                                      setTerm(cls.term);
-                                      setTime(cls.time);
-                                      setShowModal(true);           // open modal
-                                      setActiveClassId(null);       // close dropdown
-                                }}
-                              >
-                                <FaUserEdit size={22} /> Edit Student
-                              </button>
-
-                              <button
-                                className={`flex items-center gap-2 px-4 py-2 bg-red-700 hover:bg-red-800  text-white  cursor-pointer transition-all ${
-                                  loading ? "opacity-50 cursor-not-allowed" : ""
-                                }`}
-                                onClick={() => handleEndClass(cls.id)}
-                                disabled={loading}
-                              >
-                                <MdDeleteSweep size={24} />
-                                 End Class
-                              </button>
-                            </div>
-                          )}
-
-                        </div>
-                    </div>
+                  </div>
                 ))
-              ) : (
-                <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-lg shadow">
-                  <h2 className="text-xl font-semibold text-gray-700">
-                    Looks like there are no classes yet
-                  </h2>
-                  <p className="mt-2 flex items-center gap-1 text-gray-600">
-                    You can add a new class to get started <span className="text-xl">✨</span>
-                  </p>
+            : Array.isArray(classesList) && classesList.length > 0
+            ? // ✅ Actual class cards
+              classesList.map((cls, i) => (
+                <div
+                  key={cls?.id || i}
+                  className="relative bg-white rounded-lg shadow hover:shadow-xl transition-all"
+                >
+                  <div className="p-4 space-y-2">
+                    <h1 className="text-2xl font-bold text-black bg-gray-100 p-2 rounded">
+                      {cls?.Course ?? "No Name"}
+                    </h1>
+                    <p className="text-lg font-bold p-2 rounded">
+                      Term: {cls?.term ?? "N/A"}
+                    </p>
+                    <p className="text-lg font-bold bg-gray-100 p-2 rounded">
+                      Room: {cls?.room ?? "N/A"}
+                    </p>
+                    <p className="text-lg font-bold bg-white p-2 rounded">
+                      Teacher ID: {cls?.teachid ?? "N/A"}
+                    </p>
+                    <p className="text-lg font-bold bg-gray-100 p-2 rounded">
+                      Time: {cls?.time ?? "N/A"}
+                    </p>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex items-center justify-between gap-5 p-4 bg-gray-50">
+                    <Link
+                      to={`/dashboard/Students/${cls?.id ?? ""}`}
+                      className="bg-blue-900 text-white w-full flex items-center justify-center py-2 rounded hover:bg-blue-950 transition-all"
+                    >
+                      View Students
+                    </Link>
+
+                    <button
+                      onClick={() =>
+                        setActiveClassId((prev) => (prev === cls.id ? null : cls.id))
+                      }
+                      className="flex cursor-pointer items-center justify-center bg-blue-900 text-white p-2 rounded hover:bg-blue-950 transition-all"
+                    >
+                      <TbAntennaBars1 size={24} className="transform rotate-90" />
+                    </button>
+
+                    {activeClassId === cls.id && (
+                      <div className="absolute bottom-20 right-0 w-1/2 justify-center gap-2 bg-gray-200 shadow-lg rounded border border-gray-200 z-50 flex flex-col">
+                        <button
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white cursor-pointer transition-all"
+                          onClick={() => {
+                            setSelectedClassId(cls.id);
+                            setAddStudent(true);
+                            setActiveClassId(null);
+                          }}
+                        >
+                          <IoPersonAddSharp size={18} /> Add Student
+                        </button>
+
+                        <button
+                          className="flex items-center gap-2 px-4 py-2 bg-yellow-700 hover:bg-yellow-800 text-white cursor-pointer transition-all"
+                          onClick={() => {
+                            setSelectedClassId(cls.id);
+                            setRoom(cls.room);
+                            setCourse(cls.Course);
+                            setTerm(cls.term);
+                            setTime(cls.time);
+                            setShowModal(true);
+                            setActiveClassId(null);
+                          }}
+                        >
+                          <FaUserEdit size={22} /> Edit Student
+                        </button>
+
+                        <button
+                          className="flex items-center gap-2 px-4 py-2 bg-red-700 hover:bg-red-800 text-white cursor-pointer transition-all"
+                          onClick={() => handleEndClass(cls.id)}
+                        >
+                          <MdDeleteSweep size={24} /> End Class
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              ))
+            : // ✅ No classes message
+              <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-lg shadow">
+                <h2 className="text-xl font-semibold text-gray-700">
+                  Looks like there are no classes yet
+                </h2>
+                <p className="mt-2 flex items-center gap-1 text-gray-600">
+                  You can add a new class to get started <span className="text-xl">✨</span>
+                </p>
+              </div>}
         </div>
+
       </div>
 
       {/* Modal Add Class*/}
@@ -620,8 +633,8 @@ const [activeClassId, setActiveClassId] = useState(null);
                   className="border mt-3 text-lg w-full border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
                 </select>
               </div>
 

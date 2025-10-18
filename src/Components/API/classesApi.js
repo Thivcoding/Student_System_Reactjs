@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.0.127:8000/api/user/class";
+const API_URL = "http://192.168.0.128:8000/api/user/class";
 
 export const getClasses = async () => {
   const token = localStorage.getItem("token");

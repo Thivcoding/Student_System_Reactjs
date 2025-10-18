@@ -1,23 +1,21 @@
 // src/api/studentsApi.js
 import axios from "axios";
 
-const API_URL = "http://192.168.0.127:8000/api/user/students";
+const API_URL = "http://192.168.0.128:8000/api/user/students";
 
 // Fetch all students
 export const getStudentById = async (id) => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No auth token found, please login first.");
 
-  console.log(id);
+  // console.log(id);
   
 
   try {
     const res = await axios.get(`${API_URL}/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    console.log("✅ Student API Response:", res.data);
-
-    console.log(res.data);
+    // console.log("✅ Student API Response:", res.data);
     
     return res.data.datas || null;
   } catch (error) {
@@ -49,7 +47,7 @@ export const updateStudent = async (id, studentData) => {
   if (!token) throw new Error("No auth token found");
 
   try {
-    const res = await axios.put(`https://your-api.com/students/${id}`, studentData, {
+    const res = await axios.put(`${API_URL}/${id}`, studentData, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;

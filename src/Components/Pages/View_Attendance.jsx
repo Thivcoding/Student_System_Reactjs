@@ -17,50 +17,60 @@ const View_Attendance = () => {
   const [status, setStatus] = useState(records.status);
   const [resson, setResson] = useState(records.resson || "");
 
-    const handleSave = async () => {
-        if (!editingRecord) return;
+const handleSave = async () => {
+  if (!editingRecord) return;
 
-        try {
-            // Call API to update attendance
-            const payload = {
-                status: status,
-                resson: resson?.trim() === "" ? null : resson,
-            };
+  // ✅ Frontend validation
+  if (status === "late" && (!resson || resson.trim() === "")) {
+    return Swal.fire({
+      icon: "error",
+      title: "Error!",
+      text: "សូមបញ្ចូលមូលហេតុសម្រាប់សិស្សដែលយឺត។",
+      confirmButtonText: "OK",
+    });
+  }
 
-            const token = localStorage.getItem("token"); // or however you store your token
-            await UpdateAttendance(editingRecord.attenID, payload, token);
-
-            // Update local state after successful API call
-            setRecords((prevRecords) =>
-                prevRecords.map((r) =>
-                    r.attenID === editingRecord.attenID
-                        ? { ...r, status: status, resson: resson?.trim() === "" ? null : resson }
-                        : r
-                )
-            );
-
-            setIsOpen(false);
-            setEditingRecord(null);
-
-            // SweetAlert success
-            Swal.fire({
-                icon: "success",
-                title: "Updated!",
-                text: "Attendance record has been updated.",
-                timer: 2000,
-                showConfirmButton: false,
-            });
-        } catch (error) {
-            console.error("Error updating attendance:", error);
-
-            // SweetAlert error
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: "Failed to update attendance. Please try again.",
-            });
-        }
+  try {
+    // Prepare payload
+    const payload = {
+      status: status,
+      resson: status === "late" ? resson.trim() : "", // only send reason for late
     };
+
+    const token = localStorage.getItem("token");
+    await UpdateAttendance(editingRecord.attenID, payload, token);
+
+    // Update local state
+    setRecords((prevRecords) =>
+      prevRecords.map((r) =>
+        r.attenID === editingRecord.attenID
+          ? { ...r, status: status, resson: status === "late" ? resson.trim() : null }
+          : r
+      )
+    );
+
+    setIsOpen(false);
+    setEditingRecord(null);
+
+    // SweetAlert success
+    Swal.fire({
+      icon: "success",
+      title: "Updated!",
+      text: "Attendance record has been updated.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error("Error updating attendance:", error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Failed to update attendance. Please try again.",
+    });
+  }
+};
+
 
 
 
@@ -68,7 +78,7 @@ const View_Attendance = () => {
     const fetchAttendance = async () => {
       try {
         const data = await GetAttendance(studentID);
-        console.log(data);
+        // console.log(data);
         
         setRecords(data || []);
       } catch (error) {
@@ -99,19 +109,19 @@ const View_Attendance = () => {
     <div>
         Name:{" "}
         <span className="text-red-600">
-        {loading ? <SkeletonText width="100px" /> : student.name ?? ""}
+        {loading ? <SkeletonText width="100px" /> : student.name ?? "Empty"}
         </span>
     </div>
     <div>
         Gender:{" "}
         <span className="text-red-600">
-        {loading ? <SkeletonText width="60px" /> : student.gender ?? ""}
+        {loading ? <SkeletonText width="60px" /> : student.gender ?? "Empty"}
         </span>
     </div>
     <div>
         Course:{" "}
         <span className="text-red-600">
-        {loading ? <SkeletonText width="140px" /> : "Web-Design/React"} {/* Or student.course if exists */}
+        {loading ? <SkeletonText width="140px" /> : "Empty"} {/* Or student.course if exists */}
         </span>
     </div>
     </div>
@@ -129,87 +139,66 @@ const View_Attendance = () => {
         </tr>
     </thead>
     <tbody>
-        {loading
-        ? Array(6).fill().map((_, index) => (
-            <tr key={index} className="bg-gray-50 animate-pulse">
-                <td className="p-3 border">
-                <SkeletonBox width="60px" />
-                </td>
-                <td className="p-3 border">
-                <SkeletonBox width="80px" />
-                </td>
-                <td className="p-3 border">
-                <SkeletonBox width="140px" />
-                </td>
-                <td className="p-3 border">
-                <SkeletonBox width="120px" height="30px" />
-                </td>
-                <td className="p-3 border flex justify-center gap-3">
-                <SkeletonCircle />
-                <SkeletonCircle />
-                </td>
-            </tr>
-            ))
-        : records.map((record, index) => (
-            <tr
-                key={record.attenID}
-                className={`${
-                index % 2 === 0 ? "bg-gray-50" : "bg-gray-100"
-                } hover:bg-gray-200 transition-all duration-200`}
-            >
-                <td className="p-3 border font-semibold">{record.attenID}</td>
-
-                {/* Status Badge */}
-                <td className="p-3 border">
-                <span
-                    className={`inline-block px-3 py-1 rounded-xl text-white font-semibold text-sm transition-all duration-300 ${
-                    record.status === "present"
-                        ? "bg-green-600"
-                        : record.status === "late"
-                        ? "bg-yellow-500"
-                        : record.status === "absent"
-                        ? "bg-red-600"
-                        : "bg-gray-500"
-                    } capitalize`}
-                >
-                    {record.status ?? "empty"}
-                </span>
-                </td>
-
-                <td className="p-3 border">{record.date}</td>
-
-                {/* Reason Badge */}
-                <td className="p-3 border">
-                <span
-                    className={`inline-block px-3 py-1 rounded-md text-sm text-gray-700 border ${
-                    record.resson ? "bg-gray-100" : "bg-red-100 text-red-600"
-                    }`}
-                >
-                    {record.resson ?? "Empty"}
-                </span>
-                </td>
-
-                {/* Action Buttons */}
-                <td className="p-3 border flex justify-center gap-3">
-                    <button
-                        onClick={() => {
-                            setEditingRecord(record);
-                            setStatus(record.status);
-                            setResson(record.resson || "");
-                            setIsOpen(true);
-                        }}
-                        className="bg-yellow-400 hover:bg-yellow-500 text-white p-2 rounded-lg shadow-md transition duration-200"
-                        >
-                        <AiOutlineEdit className="w-5 h-5" />
-                    </button>
-
-                <button className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-md transition duration-200">
-                    <AiOutlineDelete className="w-5 h-5" />
-                </button>
-                </td>
-            </tr>
-            ))}
+      {loading ? (
+        Array(6).fill().map((_, index) => (
+          <tr key={index} className="bg-gray-50 animate-pulse">
+            <td className="p-3 border"><SkeletonBox width="60px" /></td>
+            <td className="p-3 border"><SkeletonBox width="80px" /></td>
+            <td className="p-3 border"><SkeletonBox width="140px" /></td>
+            <td className="p-3 border"><SkeletonBox width="120px" height="30px" /></td>
+            <td className="p-3 border flex justify-center gap-3">
+              <SkeletonCircle /><SkeletonCircle />
+            </td>
+          </tr>
+        ))
+      ) : records.length > 0 ? (
+        records.map((record, index) => (
+          <tr key={record.attenID} className={`${index % 2 === 0 ? "bg-gray-50" : "bg-gray-100"} hover:bg-gray-200 transition-all duration-200`}>
+            <td className="p-3 border font-semibold">{record.attenID}</td>
+            <td className="p-3 border">
+              <span className={`inline-block px-3 py-1 rounded-xl text-white font-semibold text-sm ${
+                record.status === "present" ? "bg-green-600" :
+                record.status === "late" ? "bg-yellow-500" :
+                record.status === "absent" ? "bg-red-600" : "bg-gray-500"
+              } capitalize`}>
+                {record.status ?? "empty"}
+              </span>
+            </td>
+            <td className="p-3 border">{record.date}</td>
+            <td className="p-3 border">
+              <span className={`inline-block px-3 py-1 rounded-md text-sm text-gray-700 border ${
+                record.resson ? "bg-gray-100" : "bg-red-100 text-red-600"
+              }`}>
+                {record.resson ?? "Empty"}
+              </span>
+            </td>
+            <td className="p-3 border flex justify-center gap-3">
+              <button
+                onClick={() => {
+                  setEditingRecord(record);
+                  setStatus(record.status);
+                  setResson(record.resson || "");
+                  setIsOpen(true);
+                }}
+                className="bg-yellow-400 hover:bg-yellow-500 text-white p-2 rounded-lg shadow-md transition duration-200"
+              >
+                <AiOutlineEdit className="w-5 h-5" />
+              </button>
+              <button className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-md transition duration-200">
+                <AiOutlineDelete className="w-5 h-5" />
+              </button>
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan={5} className="p-4 text-center text-gray-500">
+            គ្មាន attendance data សម្រាប់សិស្សនេះ
+          </td>
+        </tr>
+      )}
     </tbody>
+
     </table>
 
     {/* Modal */}
@@ -244,8 +233,14 @@ const View_Attendance = () => {
                 value={resson}
                 onChange={(e) => setResson(e.target.value)}
                 placeholder="Enter reason (optional)"
-                className="w-full mt-3 text-lg text-black border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+                disabled={status !== "late"}
+                className={`w-full mt-3 text-lg text-black border rounded-lg px-4 py-2 focus:outline-none focus:ring-2
+                    ${status === "late" ? "bg-yellow-100 border-yellow-400" 
+                    : status === "present" ? "bg-green-100 border-green-400" 
+                    : "bg-red-100 border-red-400"} 
+                    focus:ring-blue-500`
+                }
+                />
             </div>
 
             {/* Buttons */}

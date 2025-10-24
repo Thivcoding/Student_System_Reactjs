@@ -30,6 +30,8 @@ const Students = () => {
 
           //  Check API structure
           const studentData = res?.data || res;
+          console.log(studentData);
+          
 
           if (studentData) {
             setSelectedStudent(studentData);
@@ -75,7 +77,7 @@ const Students = () => {
 
       // Update local state after successful API update
       setStudents((prev) =>
-        prev.map((s) => (s.id === selectedStudent.id ? updated.student : s))
+        prev.map((s) => (s.id === selectedStudent.id ? updated.data : s))
       );
 
       Swal.fire({
@@ -209,7 +211,7 @@ const Students = () => {
                   </td>
                 </tr>
               ))
-            ) : Array.isArray(students) && students.length > 0 ? (
+            ) : students.length > 0 ? (
               students.map((s, index) => (
                 <tr
                   key={s.id || index}

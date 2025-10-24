@@ -1,7 +1,7 @@
 // src/api/studentsApi.js
 import axios from "axios";
 
-const API_URL = "http://192.168.0.128:8000/api/user/students";
+const API_URL = "http://127.0.0.1:8000/api/user/students";
 
 // Fetch all students
 export const getStudentById = async (id) => {

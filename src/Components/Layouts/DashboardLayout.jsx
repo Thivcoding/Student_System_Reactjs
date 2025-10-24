@@ -9,7 +9,7 @@ const DashboardLayout = () => {
   if (!user) return <Navigate to="/login" />;
 
   // Only admin can access
-  if (user.role !== 0) return <Navigate to="/login" />;
+  if (user.role !== 1) return <Navigate to="/login" />;
 
   return (
     <div className="flex min-h-screen">

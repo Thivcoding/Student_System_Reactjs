@@ -82,7 +82,7 @@ const AttendanceForm = () => {
             : s.status === "R"
             ? "late"
             : "absent",
-        reason: s.reason || undefined,
+        resson: s.resson || undefined,
       }));
 
       try {
@@ -239,7 +239,7 @@ const AttendanceForm = () => {
                             handleRessonChange(student.id, e.target.value)
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-blue-900 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                          disabled={student.status === "P"}
+                          disabled={student.status != "R"}
                         />
                       </td>
                     </tr>

@@ -41,12 +41,17 @@ const [activeClassId, setActiveClassId] = useState(null);
 
         const data = await getClasses();
         if (!data?.data) throw new Error("Invalid response from server");
+        // console.log(data.data);
+        
 
-        const userClasses = data.data.filter(
-          (cls) => String(cls.teachid) === String(user.id)
-        );
+      const userClasses = data.data
+        .filter((cls) => cls && cls.teachid && cls.id)
+        .filter((cls) => String(cls.teachid) === String(user.id));
 
-        // ✅ Simulate network delay using setTimeout
+
+        // console.log(userClasses);
+        
+        //  Simulate network delay using setTimeout
         setTimeout(() => {
           setClassesList(userClasses);
           setLoading(false);
@@ -62,7 +67,7 @@ const [activeClassId, setActiveClassId] = useState(null);
 
     fetchClasses();
   }, []);
-
+  
 
   // Add class handler
     const handleAddClass = async (e) => {
@@ -77,9 +82,8 @@ const [activeClassId, setActiveClassId] = useState(null);
         return;
       }
 
-      const storedUser = localStorage.getItem("user");
-      const token = localStorage.getItem("token"); // ✅ match with login key
-      const user = storedUser ? JSON.parse(storedUser) : null;
+      const user = JSON.parse(localStorage.getItem("user"));
+      const token = localStorage.getItem("token"); 
       const teacherId = user ? user.id : null;
       
       if (!teacherId || !token) {
@@ -105,10 +109,10 @@ const [activeClassId, setActiveClassId] = useState(null);
 
         setTimeout(() => navigate("/dashboard/Class"), 1500);
 
-        // ✅ Update list
+        // console.log(response.class);
+        
+        // Update list
         setClassesList((prev) => [...prev, response.class]);
-
-
 
         Swal.fire({
           icon: "success",
@@ -118,7 +122,7 @@ const [activeClassId, setActiveClassId] = useState(null);
           showConfirmButton: false,
         });
 
-        // ✅ Reset form
+        //  Reset form
         setRoom("");
         setCourse("");
         setTerm("");
@@ -174,12 +178,15 @@ const [activeClassId, setActiveClassId] = useState(null);
           token
         );
 
+         console.log("✅ Response from updateClass:", response.class);
         // ✅ Update local list
         setClassesList((prev) =>
           prev.map((cls) =>
             cls.id === selectedClassId ? { ...cls, ...response.class } : cls
           )
         );
+
+
 
         Swal.fire({
           icon: "success",
@@ -383,7 +390,7 @@ const [activeClassId, setActiveClassId] = useState(null);
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading
-            ? // ✅ Skeleton placeholders
+            ? 
               Array(6)
                 .fill(0)
                 .map((_, idx) => (
@@ -404,9 +411,9 @@ const [activeClassId, setActiveClassId] = useState(null);
                     </div>
                   </div>
                 ))
-            : Array.isArray(classesList) && classesList.length > 0
-            ? // ✅ Actual class cards
-              classesList.map((cls, i) => (
+            : classesList.length > 0
+            ?  
+              classesList.filter((cls) => cls && cls.id).map((cls, i) => (
                 <div
                   key={cls?.id || i}
                   className="relative bg-white rounded-lg shadow hover:shadow-xl transition-all"
@@ -486,7 +493,7 @@ const [activeClassId, setActiveClassId] = useState(null);
                   </div>
                 </div>
               ))
-            : // ✅ No classes message
+            : // No classes message
               <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-lg shadow">
                 <h2 className="text-xl font-semibold text-gray-700">
                   Looks like there are no classes yet

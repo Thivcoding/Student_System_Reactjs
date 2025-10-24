@@ -4,7 +4,7 @@ import { MdOutlineAddCircleOutline } from "react-icons/md";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { addStudent } from "../API/studentAPI";
+import { addStudent, getAllStudents } from "../API/studentAPI";
 import { addClass, EndClass, getClasses, updateClass } from "../API/classesApi";
 import { TbAntennaBars1 } from "react-icons/tb";
 import { MdDeleteSweep } from "react-icons/md";
@@ -26,9 +26,11 @@ const [activeClassId, setActiveClassId] = useState(null);
   const [term, setTerm] = useState("");
   const [time, setTime] = useState("");
   const [classesList, setClassesList] = useState([]);
-
+  
   const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null);
+  const [filteredClasses, setFilteredClasses] = useState([]);
+  const [search, setSearch] = useState("");
   // getClass
     useEffect(() => {
     const fetchClasses = async () => {
@@ -54,6 +56,7 @@ const [activeClassId, setActiveClassId] = useState(null);
         //  Simulate network delay using setTimeout
         setTimeout(() => {
           setClassesList(userClasses);
+          setFilteredClasses(userClasses);
           setLoading(false);
         }, 1500); // delay 1.5 seconds
       } catch (err) {
@@ -67,7 +70,6 @@ const [activeClassId, setActiveClassId] = useState(null);
 
     fetchClasses();
   }, []);
-  
 
   // Add class handler
     const handleAddClass = async (e) => {
@@ -186,7 +188,12 @@ const [activeClassId, setActiveClassId] = useState(null);
           )
         );
 
-
+        setFilteredClasses(prev =>
+        prev.map(cls =>
+          cls.id === selectedClassId
+            ? { ...cls, Course: course, term: term, room: room, time: time }
+            : cls
+        ))
 
         Swal.fire({
           icon: "success",
@@ -211,7 +218,6 @@ const [activeClassId, setActiveClassId] = useState(null);
         });
       }
     };
-
 
   // EndClass
     const handleEndClass = async (classId) => {
@@ -248,7 +254,30 @@ const [activeClassId, setActiveClassId] = useState(null);
     const [studentName, setStudentName] = useState("");
     const [gender, setGender] = useState("");
     const [phone, setPhone] = useState("");
+    const [students, setStudents] = useState([]);
+    const [maleCount, setMaleCount] = useState(0);
+    const [femaleCount, setFemaleCount] = useState(0);
 
+    // get all students
+     useEffect(() => {
+      const fetchStudents = async () => {
+        try {
+          const data = await getAllStudents();
+          setStudents(data);
+          // បំបែកតាមភេទ
+          const males = data.filter((stu) => stu.gender?.toLowerCase() === "male");
+          const females = data.filter((stu) => stu.gender?.toLowerCase() === "female");
+
+          setMaleCount(males.length);
+          setFemaleCount(females.length);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      fetchStudents();
+    }, []);
+    
     // Handler for Add Student
     const handleAddStudent = async (e) => {
 
@@ -313,6 +342,29 @@ const [activeClassId, setActiveClassId] = useState(null);
         }
       };
 
+      // Skeleton Card Component
+    const SkeletonCard = () => (
+      <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow animate-pulse">
+        <div className="w-full flex justify-between items-center">
+          <div>
+            <div className="h-4 bg-gray-300 rounded w-24 mb-3"></div>
+            <div className="h-8 bg-gray-300 rounded w-20"></div>
+          </div>
+          <div className="h-16 w-16 bg-gray-300 rounded-lg"></div>
+        </div>
+      </div>
+    );
+
+  // Search filter
+  const handleSearch = (e) => {
+    const keyword = e.target.value;
+    setSearch(keyword);
+    if (!keyword) return setFilteredClasses(classesList);
+    const filtered = classesList.filter((cls) =>
+      cls.Course.toLowerCase().includes(keyword.toLowerCase())
+    );
+    setFilteredClasses(filtered);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -325,46 +377,70 @@ const [activeClassId, setActiveClassId] = useState(null);
 
         {/* Stats Cards */}
         <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Classes</p>
-              <p className="mt-2 text-4xl font-bold text-gray-900">{classesList.length}</p>
-            </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-blue-100">
-              <FaUserPlus className="h-10 w-10 text-blue-600" />
-            </div>
-          </div>
+              {/* Total Classes */}
+              {loading ? (
+                <SkeletonCard />
+              ) : (
+                <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Classes</p>
+                    <p className="mt-2 text-4xl font-bold text-gray-900">
+                      {classesList.length}
+                    </p>
+                  </div>
+                  <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-blue-100">
+                    <FaUserPlus className="h-10 w-10 text-blue-600" />
+                  </div>
+                </div>
+              )}
 
-          <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Students</p>
-              <p className="mt-2 text-4xl font-bold text-gray-900">0</p>
-            </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-green-100">
-              <FaUsers className="h-10 w-10 text-green-600" />
-            </div>
-          </div>
+              {/* Total Students */}
+              {loading ? (
+                <SkeletonCard />
+              ) : (
+                <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Students</p>
+                    <p className="mt-2 text-4xl font-bold text-gray-900">
+                      {students.length}
+                    </p>
+                  </div>
+                  <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-green-100">
+                    <FaUsers className="h-10 w-10 text-green-600" />
+                  </div>
+                </div>
+              )}
 
-          <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Male Students</p>
-              <p className="mt-2 text-4xl font-bold text-gray-900">0</p>
-            </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-blue-100">
-              <FaUser className="h-10 w-10 text-blue-500" />
-            </div>
-          </div>
+              {/* Male Students */}
+              {loading ? (
+                <SkeletonCard />
+              ) : (
+                <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Male Students</p>
+                    <p className="mt-2 text-4xl font-bold text-gray-900">{maleCount}</p>
+                  </div>
+                  <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-blue-100">
+                    <FaUser className="h-10 w-10 text-blue-500" />
+                  </div>
+                </div>
+              )}
 
-          <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Female Students</p>
-              <p className="mt-2 text-4xl font-bold text-gray-900">0</p>
+              {/* Female Students */}
+              {loading ? (
+                <SkeletonCard />
+              ) : (
+                <div className="flex items-center justify-between p-6 bg-white rounded-lg shadow">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Female Students</p>
+                    <p className="mt-2 text-4xl font-bold text-gray-900">{femaleCount}</p>
+                  </div>
+                  <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-pink-100">
+                    <FaUser className="h-10 w-10 text-pink-500" />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-pink-100">
-              <FaUser className="h-10 w-10 text-pink-500" />
-            </div>
-          </div>
-        </div>
 
         {/* Search & Add Button */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -372,6 +448,8 @@ const [activeClassId, setActiveClassId] = useState(null);
             <FaSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
+              value={search}
+              onChange={handleSearch}
               placeholder="Search Class..."
               className="w-full border border-gray-300 rounded-lg px-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -411,9 +489,9 @@ const [activeClassId, setActiveClassId] = useState(null);
                     </div>
                   </div>
                 ))
-            : classesList.length > 0
+            : filteredClasses.length > 0
             ?  
-              classesList.filter((cls) => cls && cls.id).map((cls, i) => (
+              filteredClasses.filter((cls) => cls && cls.id).map((cls, i) => (
                 <div
                   key={cls?.id || i}
                   className="relative bg-white rounded-lg shadow hover:shadow-xl transition-all"

@@ -96,6 +96,8 @@ const handleSave = async () => {
 
     const student = records.length > 0 ? records[0] : {};
 
+    console.log(student);
+    
   
 
   return (
@@ -121,7 +123,7 @@ const handleSave = async () => {
     <div>
         Course:{" "}
         <span className="text-red-600">
-        {loading ? <SkeletonText width="140px" /> : "Empty"} {/* Or student.course if exists */}
+        {loading ? <SkeletonText width="140px" /> :student.courses ?? "Web-Design/React"} {/* Or student.course if exists */}
         </span>
     </div>
     </div>

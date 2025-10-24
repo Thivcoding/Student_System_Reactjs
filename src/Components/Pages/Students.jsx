@@ -6,12 +6,15 @@ import { getStudentById, updateStudent } from "../API/studentAPI";
 import Swal from "sweetalert2";
 import { FaChalkboardUser } from "react-icons/fa6";
 import { FaClipboardCheck } from "react-icons/fa"; // from Font Awesome
+import { getClassById } from "../API/classesApi";
 const Students = () => {
   const [students, setStudents] = useState([]);
   const [editStudentModal, setEditStudentModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null); 
+  const [classData, setClassData] = useState([]);
+  const [classes, setClasses] = useState([]); // for table if needed
   const navigate = useNavigate();
 
   const {id} = useParams();
@@ -56,6 +59,48 @@ const Students = () => {
         setSelectedStudent(null);
       };
     }, [id]);
+
+  // get class by id
+  useEffect(() => {
+  const fetchClass = async () => {
+    if (!id) return;
+
+    setLoading(true);
+    setError(null);
+    setClasses([]); 
+
+    try {      
+      const res = await getClassById(id); // call API
+      // res.data is an array, take first element
+      const classInfo = res.data[0]; 
+      console.log("Class data:", classInfo);
+
+      if (classInfo) {
+        setClassData(classInfo);          // single object for header
+        setClasses([classInfo]);          // store as array for table/loop
+      } else {
+        setClassData(null);
+        setClasses([]);
+      }
+    } catch (err) {
+      console.error("❌ Error fetching class:", err);
+      setError("Failed to fetch class data.");
+      setClassData(null);
+      setClasses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchClass();
+
+  // cleanup
+  return () => {
+    setClasses([]);
+    setClassData(null);
+  };
+}, [id]);
+
 
 
   // Handle modal input changes
@@ -103,49 +148,81 @@ const Students = () => {
     }
   };
 
-  // let [count ,setCount] = useState(1);
+  console.log(classData);
+  
+  
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between bg-gray-200 gap-4 p-5 px-16 shadow rounded-lg mb-6">
-        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
-          <div className="flex items-center ">
-            <div className="w-20 h-20 rounded-full p-4 bg-white mr-5">
-                <FaChalkboardUser className="w-full h-full" />
-            </div>
-            <div>
-                  <h3 className="text-xl font-bold text-indigo-800">Web-Design/React</h3>
-                <p className="text-lg text-indigo-800">React</p>
-            </div>
+    {/* Header Dynamic Info */}
+    <div className="flex flex-wrap justify-between bg-gray-200 gap-4 p-5 px-16 shadow rounded-lg mb-6">
+      {/* Class Name & Subject */}
+      <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
+        <div className="flex items-center">
+          <div className="w-20 h-20 rounded-full p-4 bg-white mr-5 flex items-center justify-center">
+            {loading ? (
+              <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full"></div>
+            ) : (
+              <i className="bi bi-journal-bookmark text-indigo-700 text-4xl"></i>
+            )}
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-indigo-800">
+              {loading ? <div className="h-6 w-32 bg-gray-200 animate-pulse rounded"></div> : classData?.Course || "Unknown Class"}
+            </h3>
+            <p className="text-lg text-indigo-800">
+              {loading ? <div className="h-4 w-24 bg-gray-200 animate-pulse rounded mt-1"></div> : classData?.term || "No Term Info"}
+            </p>
           </div>
         </div>
-
-        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
-          <div className="flex items-center ">
-            <div className="w-20 h-20 rounded-full p-4 bg-white mr-5">
-                <FaChalkboardUser className="w-full h-full" />
-            </div>
-            <div>
-                  <h3 className="text-xl font-bold text-indigo-800">Building 2</h3>
-                <p className="text-lg text-indigo-800">Physical</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
-          <div className="flex items-center ">
-            <div className="w-20 h-20 rounded-full p-4 bg-white mr-5">
-                <FaChalkboardUser className="w-full h-full" />
-            </div>
-            <div>
-                <p className="text-lg font-bold  text-indigo-800">Mon-Thur</p>
-                <h3 className="text-xl text-indigo-800" >9-11:00</h3>
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      {/* Building / Room Info */}
+      <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
+        <div className="flex items-center">
+          <div className="w-20 h-20 rounded-full p-4 bg-white mr-5 flex items-center justify-center">
+            {loading ? (
+              <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full"></div>
+            ) : (
+              <i className="bi bi-building text-indigo-700 text-4xl"></i>
+            )}
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-indigo-800">
+              ROOM
+            </h3>
+            <p className="text-lg text-indigo-800">
+              {loading ? <div className="h-4 w-20 bg-gray-200 animate-pulse rounded mt-1"></div> : classData?.room || "No Room Info"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Schedule Info */}
+      <div className="flex items-center w-[30%] gap-3 border-2 border-dashed border-indigo-700 p-4 rounded-xl bg-gray-300 shadow">
+        <div className="flex items-center">
+          <div className="w-20 h-20 rounded-full p-4 bg-white mr-5 flex items-center justify-center">
+            {loading ? (
+              <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full"></div>
+            ) : (
+              <i className="bi bi-clock text-indigo-700 text-4xl"></i>
+            )}
+          </div>
+          <div>
+            <p className="text-lg font-bold text-indigo-800">
+              {loading ? <div className="h-4 w-24 bg-gray-200 animate-pulse rounded mt-1"></div> : classData?.term || "No Day Info"}
+            </p>
+            <h3 className="text-xl text-indigo-800">
+              {loading ? <div className="h-6 w-32 bg-gray-200 animate-pulse rounded mt-1"></div> : classData?.time || "No Time Info"}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
 
       {/* Title and Buttons */}
       <div className="flex justify-between items-center mb-4">

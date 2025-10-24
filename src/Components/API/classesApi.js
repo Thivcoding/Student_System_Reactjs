@@ -17,6 +17,32 @@ export const getClasses = async () => {
   }
 };
 
+//  Get class by ID
+export const getClassById = async (id) => {
+try {
+    //  Get token from localStorage (saved when user logged in)
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.warn("⚠️ No token found — user not authenticated.");
+      throw new Error("Unauthorized. Please login first.");
+    }
+
+    //  Call API with Authorization header
+    const res = await axios.get(`${API_URL}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    console.error(`Error fetching class with ID ${id}:`, error);
+    throw error;
+  }
+};
+
 export const addClass = async (classData) => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No auth token found");

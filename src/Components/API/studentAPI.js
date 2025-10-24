@@ -4,6 +4,24 @@ import axios from "axios";
 const API_URL = "http://127.0.0.1:8000/api/user/students";
 
 // Fetch all students
+export const getAllStudents = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No auth token found, please login first.");
+
+  try {
+    const res = await axios.get(API_URL, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // Laravel returns { message: "Get data Success", Data: [...] }
+    return res.data.Data || [];
+  } catch (error) {
+    console.error("❌ Error fetching all students:", error);
+    throw error;
+  }
+};
+
+// Fetch all students by id
 export const getStudentById = async (id) => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No auth token found, please login first.");

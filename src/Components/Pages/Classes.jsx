@@ -110,11 +110,11 @@ const [activeClassId, setActiveClassId] = useState(null);
         );
 
         setTimeout(() => navigate("/dashboard/Class"), 1500);
-
-        // console.log(response.class);
         
         // Update list
         setClassesList((prev) => [...prev, response.class]);
+        setFilteredClasses((prev) => [...prev, response.class]);
+
 
         Swal.fire({
           icon: "success",
@@ -240,6 +240,8 @@ const [activeClassId, setActiveClassId] = useState(null);
         Swal.fire("Success!", "Class has been ended.", "success");
         // Remove class from local state
         setClassesList((prev) => prev.filter((cls) => cls.id !== classId));
+        setFilteredClasses((prev) => prev.filter((cls) => cls.id !== classId));
+        
       } catch (error) {
         console.error("Error ending class:", error);
         Swal.fire("Error", "Failed to end class.", "error");

@@ -20,7 +20,7 @@ const AboutUs = () => {
                   <div className="w-[35%] h-full">
                     <img
                       className="w-full h-full object-cover rounded-2xl"
-                      src="https://z-p3-scontent.fpnh5-2.fna.fbcdn.net/v/t39.30808-6/558089465_1355851662936341_8357579800607045300_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeH3o12-WYjGVqUEd46BeZtwF3TxJ3VavKwXdPEndVq8rM0PfbYh-4BfCXli3uWoe2aV8BuvBnfbLiMA0_ikaL9k&_nc_ohc=lo5u_5CY-NEQ7kNvwGV5FdC&_nc_oc=AdnqlNkcZF2vEpL3JsxIqjC6RpTO5Je80FugCtxHSisCxJ8R3EvK84RW3o7NOvo6kwk&_nc_zt=23&_nc_ht=z-p3-scontent.fpnh5-2.fna&_nc_gid=Q_3MeD1OPh9YsVB9QfqScg&oh=00_AfdEprhENKrFgQ9R7KxB0VZteof48a_O_EqYq6JEOTG2ig&oe=68FF8043"
+                      src="https://scontent.fpnh18-1.fna.fbcdn.net/v/t39.30808-6/595288353_1406686281186212_6692881722306654804_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeFo6xxycla0mTnns7BoglqrQO3WztFOF7FA7dbO0U4XsfcOannNCgcVlZKXiXfOO9houlmbHbRO_AEmD3RPiYQM&_nc_ohc=myfMlzieqXsQ7kNvwFyKtek&_nc_oc=AdmX57GBvdCc05pIh2pneX6yqptxBjq25xYhYCyKQWXStnPezel32KSlZ6SaUxS6UOs&_nc_zt=23&_nc_ht=scontent.fpnh18-1.fna&_nc_gid=EGS9TXSjFVlBz59Dkq5C_A&oh=00_Afl1n4By108UT6CKP07QLn67OKA7JDHRHMxuGLBqFP6sKw&oe=695495C9"
                       alt="Vanthiv profile"
                     />
                   </div>
@@ -59,7 +59,7 @@ const AboutUs = () => {
                   <div className="w-[35%] h-full pr-10">
                     <img
                       className="w-full h-full object-cover rounded-2xl"
-                      src="https://z-p3-scontent.fpnh5-3.fna.fbcdn.net/v/t39.30808-6/539253782_1295511718736060_369277209905771653_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHutvNSEKgu-hiVYg2aZV3BL4szpWOdPywvizOlY50_LLXRUVACV4ODur9lPR-HQurx91INfI29Kqhc2YXAH5W3&_nc_ohc=re4ImAcxjnoQ7kNvwFHvTv5&_nc_oc=AdkfBiJeMs6BB7gDoW_dSsIBOb8k_xo2Y86V0_RorZczHDnk6X7HUhikfYfw7DI_Fm0&_nc_zt=23&_nc_ht=z-p3-scontent.fpnh5-3.fna&_nc_gid=eRe3G1X1370D9aBqCBacqA&oh=00_AfeMedSITcVyCxMVky3lya0oM8qv9UyJgr2UP656RL4tlQ&oe=68FFA0E0"
+                      src="https://scontent.fpnh18-3.fna.fbcdn.net/v/t39.30808-6/539253782_1295511718736060_369277209905771653_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeHutvNSEKgu-hiVYg2aZV3BL4szpWOdPywvizOlY50_LLXRUVACV4ODur9lPR-HQurx91INfI29Kqhc2YXAH5W3&_nc_ohc=lKsNoY42cycQ7kNvwHkjOZS&_nc_oc=AdkjgznTJbdBM9LQfWQhjA1xSIYGSViVqaBJ1TIr3DBPXhGNOwR4-ddmamVzNfpF0mU&_nc_zt=23&_nc_ht=scontent.fpnh18-3.fna&_nc_gid=RTGH79b1JTph5wtGBJCUPg&oh=00_AfmLy8ij6FMlsErp-7xJdw1ERQFGESy_33A-ShbPHhSuLQ&oe=6954A9A0"
                       alt="Vanthiv profile"
                     />
                   </div>
